@@ -1,0 +1,13 @@
+For create and delete inode:
+- Readerlock all of the inodes up until you hit the parent inode of the target (i.e. FS_DIRENTRY), continue traversing, etc
+- Remember to do hand-over-hand locking while traversing
+- When you hit the parent inode of the target, writerlock it, readerunlock previous inode
+- Then just do the create/delete call
+- When finished, writerunlock
+
+For read and write:
+- Readerlock all of the inodes up until you hit the the target (i.e. FS_DIRENTRY[i or something]), continue traversing, etc
+- Remember to do hand-over-hand locking while traversing
+- When you hit the inode of the target, writerlock it if its a write call and readerunlock the previous inode, or just pass the readerlock from the previous inode if its a read call
+- Then just do the write/read call
+- When finished, writerunlock if its a write call, readerunlock if its a read call

@@ -1,0 +1,3 @@
+In order to handle synchronization, our file server uses a series of reader/writer locks to allow all requests that are concurrent to go through at once. By using a reader/writer locks, any data that must be read, but does not have to be written or altered, is used as concurrently as possible by as many threads that need it, as opposed to locking data down completely.
+
+The locking occurs through our traverse function and as we make the requests. For FS_CREATE, FS_DELETE, and FS_WRITE we do a write lock for the "target" inode that we are searching for, while we look for it using a reader lock. For FS_READ, we just get a reader lock on the block that we are altering.

@@ -1,0 +1,63 @@
+parse message
+error out on erroneous requests
+based on not-allowed characters/configurations of input
+
+FS_SESSION
+	error out on session != 0
+	save the new session
+	send back request with session number and sequence
+
+FS_READBLOCK
+	check validity of request
+	traverse the file system to find the file
+	error if not found or owned by someone else, or if it's a directory
+	if found, check the size of the readblock. if block out of scope fail
+	read the block requested. send back data
+
+FS_WRITEBLOCK
+	check validity of the request. error out if bad
+	fail if blocknum == FS_MAXFILEBLOCKS
+	traverse the file system to find the file and make sure you're owner
+	error out if youre not owner, not found, or if it's a directory
+	if blocknum == size, reserve a new dik block
+	write to disk block
+	write to parent adding it in
+	send response
+
+FS_CREATE
+	check validity of the request. error out if bad
+	eager reserve a disk block
+	traverse file server for file
+	error out if not found or owned by someone else or not root
+	search the directory that we are creating in if it has empty space
+	if the size of parent is equal to FS_MAXFILEBLOCKS and there are no empty spaces, error out. or if the target file is already found, then error out.
+	if an empty space was found...
+		write the new inode
+		write to the direntry that contains your inode
+		send response
+	if no empty spaces...
+		look for a free disk block
+			error out if there are none left
+		write the new inode
+		write the new direntry to point ot your inode
+		write to parent of the new inode
+		send response
+
+FS_DELETE
+	check validity of the request. error out if bad
+	traverse down the file system to find the file/directory tjat we're looking for's parent
+	error out if parent is not us, if it's not root, or not found
+	read parent, and search inside for the file by looking through all of the entries in its .blocks data
+	keep track of the count while looking for pathname/the file in direntry arrays. if it's not found within the directory, error out
+	if found, check to see if the child is a directory or file.
+		if file, free all .blocks under it up to size (mark as free, don't write anythign to it)
+		if directory, make sure its empty. if not empty, error out. if empty, then proceed.
+	if count == 1
+		edit the parent's data, move the inode blockthat it pointed to to the "back" and shift everything behind it in .blocks upwards
+		decrement size
+		write to parent
+		free up the child and the direntry block, but don't write anything
+	if count > 1
+		write to the direntry array to get rid of child by replacing it with "" and inode_block 0 for an entry
+		mark the child as free, but don't write anything to it
+	send response

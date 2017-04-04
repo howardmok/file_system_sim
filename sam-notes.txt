@@ -1,0 +1,85 @@
+cleartext: 
+    message: <username> <size> <NULL
+        - <username> is the name of the user that was passed to the client function. The file server uses this information to choose which password to use to decrypt the ensuing request message.
+        - <size> is the size of the encrypted message that follows this cleartext request header
+        - <NULL> is the ASCII character '\0' (terminating the string)
+    response: <size><NULL>
+        - <size> is the size of the encrypted message that follows this cleartext response header
+        - <NULL> is the ASCII character '\0' (terminating the string)
+
+FS_SESSION:
+    message: FS_SESSION <session> <sequence><NULL>
+        - <session> is 0. This field is unused for FS_SESSION requests. It's here just to make the formats of all request messages more uniform.
+        - <sequence> is the sequence number for this request
+        - <NULL> is the ASCII character '\0' (terminating the string) 
+    response: <session> <sequence><NULL>
+        - <session> is the new session number
+        - <sequence> is the sequence from the request message
+        - <NULL> is the ASCII character '\0' (terminating the string)
+
+FS_CREATE:
+    message: FS_CREATE <session> <sequence> <pathname> <type><NULL>
+        - <session> is the session number for this request
+        - <sequence> is the sequence number for this request
+        - <pathname> is the name of the file or directory being created
+        - <type> can be 'f' (file) or 'd' (directory)
+        - <NULL> is the ASCII character '\0' (terminating the string)
+
+    response: <session> <sequence><NULL>
+        - <session> is the session number from the request message
+        - <sequence> is the sequence from the request message
+        - <NULL> is the ASCII character '\0' (terminating the string)
+
+FS_DELETE: 
+    message: FS_DELETE <session> <sequence> <pathname><NULL>
+        - <session> is the session number for this request
+        - <sequence> is the sequence number for this request
+        - <pathname> is the name of the file or directory being deleted
+        - <NULL> is the ASCII character '\0' (terminating the string)
+    response: <session> <sequence><NULL>
+        - <session> is the session number from the request message
+        - <sequence> is the sequence from the request message
+        - <NULL> is the ASCII character '\0' (terminating the string)
+
+FS_READBLOCK
+    message: FS_READBLOCK <session> <sequence> <pathname> <block><NULL>
+        - <session> is the session number for this request
+        - <sequence> is the sequence number for this request
+        - <pathname> is the name of the file being read
+        - <block> specifies which block of the file to read
+        - <NULL> is the ASCII character '\0' (terminating the string)
+    response: <session> <sequence><NULL><data>
+        - <session> is the session number from the request message
+        - <sequence> is the sequence from the request message
+        - <NULL> is the ASCII character '\0' (terminating the string)
+        - <data> is the data that was read from the file. Note that <data> is outside of the response string (i.e., after <NULL>).
+
+FS_WRITEBLOCK:
+    message: FS_WRITEBLOCK <session> <sequence> <pathname> <block><NULL><data>
+        - <session> is the session number for this request
+        - <sequence> is the sequence number for this request
+        - <pathname> is the name of the file to which the data is being written
+        - <block> specifies which block of the file to write. <block> may refer to an existing block in the file, or it may refer to the block immediately after the current end of the file (this is how files grow in size).
+        - <NULL> is the ASCII character '\0' (terminating the string)
+        - <data> is the data to write to the file. Note that <data> is outside of the request string (i.e., after <NULL>).
+
+    response: <session> <sequence><NULL>
+        - <session> is the session number from the request message
+        - <sequence> is the sequence from the request message
+        - <NULL> is the ASCII character '\0' (terminating the string) 
+
+CHEATSHEET:
+    0: message: FS_SESSION <session> <sequence><NULL>
+        response: <session> <sequence><NULL>
+
+    1: message: FS_CREATE <session> <sequence> <pathname> <type><NULL>
+        response: <session> <sequence><NULL>
+        
+    2: message: FS_DELETE <session> <sequence> <pathname><NULL>
+        response: <session> <sequence><NULL>
+
+    3: message: FS_READBLOCK <session> <sequence> <pathname> <block><NULL>
+        response: <session> <sequence><NULL><data>
+
+    4: message: FS_WRITEBLOCK <session> <sequence> <pathname> <block><NULL><data>
+        response: <session> <sequence><NULL>

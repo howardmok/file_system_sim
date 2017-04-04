@@ -1,0 +1,5 @@
+TODO:
+* Write a test where inode blocks structure changes
+* TEST the populate function
+* Implement reader writer locks
+* Debug with single threads
